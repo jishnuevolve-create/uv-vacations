@@ -45,6 +45,7 @@ class Component extends DCLogic {
   componentDidMount() {
     var self = this;
     this._startBoard();
+    this._startSmooth();
     this._timer = setInterval(function () { self.setState({ step: (self.state.step + 1) % 3 }); }, 5000);
   }
   _startBoard() {
@@ -79,7 +80,76 @@ class Component extends DCLogic {
     window.addEventListener('resize', kick);
     this._kick = kick;
   }
+  _startSmooth() {
+    // Inertia smooth scrolling for mouse wheel / trackpad and in-page links.
+    var self = this;
+    var mm = function (q) { return window.matchMedia ? window.matchMedia(q).matches : false; };
+    if (mm('(prefers-reduced-motion: reduce)')) return;
+    var fine = mm('(pointer: fine)');
+    var target = window.scrollY, cur = window.scrollY, running = false, ease = 0.085;
+    var OFFSET = 96;
+    var max = function () { return Math.max(0, document.documentElement.scrollHeight - window.innerHeight); };
+    var canScrollInside = function (el, dy) {
+      while (el && el.nodeType === 1 && el !== document.body && el !== document.documentElement) {
+        var st = getComputedStyle(el);
+        if (/(auto|scroll)/.test(st.overflowY) && el.scrollHeight > el.clientHeight + 1) {
+          if (dy < 0 ? el.scrollTop > 0 : el.scrollTop + el.clientHeight < el.scrollHeight - 1) return true;
+        }
+        el = el.parentElement;
+      }
+      return false;
+    };
+    var html = document.documentElement;
+    var loop = function () {
+      cur += (target - cur) * ease;
+      if (Math.abs(target - cur) < 0.5) { cur = target; running = false; }
+      window.scrollTo(0, cur);
+      if (running) self._smoothRaf = requestAnimationFrame(loop);
+      else html.style.scrollBehavior = "";
+    };
+    var start = function () {
+      if (!running) { running = true; html.style.scrollBehavior = "auto"; self._smoothRaf = requestAnimationFrame(loop); }
+    };
+    var onWheel = function (e) {
+      if (!fine || e.ctrlKey || e.defaultPrevented || max() <= 10) return;
+      var dy = e.deltaY * (e.deltaMode === 1 ? 40 : e.deltaMode === 2 ? window.innerHeight : 1);
+      if (Math.abs(e.deltaX) > Math.abs(dy) || canScrollInside(e.target, dy)) return;
+      e.preventDefault();
+      if (!running) { target = cur = window.scrollY; }
+      ease = 0.085;
+      target = Math.max(0, Math.min(max(), target + dy));
+      start();
+    };
+    var onScroll = function () { if (!running) { target = cur = window.scrollY; } };
+    var onClick = function (e) {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey) return;
+      var a = e.target && e.target.closest ? e.target.closest('a[href^="#"]') : null;
+      if (!a || max() <= 10) return;
+      var id = a.getAttribute('href').slice(1);
+      var el = id ? document.getElementById(id) : null;
+      if (!el) return;
+      e.preventDefault();
+      var y = id === 'top' ? 0 : el.getBoundingClientRect().top + window.scrollY - OFFSET;
+      if (!running) { cur = window.scrollY; }
+      ease = 0.1;
+      target = Math.max(0, Math.min(max(), y));
+      start();
+    };
+    var stopOnTouch = function () { running = false; html.style.scrollBehavior = ""; target = cur = window.scrollY; };
+    window.addEventListener('wheel', onWheel, { passive: false });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('touchstart', stopOnTouch, { passive: true });
+    document.addEventListener('click', onClick);
+    this._smoothOff = function () {
+      window.removeEventListener('wheel', onWheel);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('touchstart', stopOnTouch);
+      document.removeEventListener('click', onClick);
+      if (self._smoothRaf) cancelAnimationFrame(self._smoothRaf);
+    };
+  }
   componentWillUnmount() {
+    if (this._smoothOff) this._smoothOff();
     if (this._kick) { window.removeEventListener('scroll', this._kick); window.removeEventListener('resize', this._kick); }
     if (this._raf) cancelAnimationFrame(this._raf);
     if (this._timer) clearInterval(this._timer);
@@ -107,7 +177,7 @@ class Component extends DCLogic {
         var dest = self.state.heroTo.trim();
         self.setState({ tab: 'flights', to: dest || self.state.to, searched: false });
         var el = document.getElementById('book');
-        if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
       },
 
       tabs: this.TABS.map(function (t) {

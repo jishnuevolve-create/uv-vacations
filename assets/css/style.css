@@ -734,6 +734,9 @@ a{color:#350285}a:hover{color:#5B16D6}
   .eyebrow{font-size:11px;padding:0 12px;min-height:28px}
 }
 
+html{scroll-behavior:smooth;scroll-padding-top:96px}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+
 /* static-build helpers */
 .dc-if{display:contents}
 .dc-if[hidden],[hidden]{display:none !important}
