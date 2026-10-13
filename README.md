@@ -16,7 +16,9 @@ No build step or dependencies — open `index.html` or host the folder on any st
 ## Still to fill in
 
 - Phone, WhatsApp number, email and office address (search for `[PHONE]`, `[WHATSAPP NUMBER]`, `[EMAIL]`, `[OFFICE ADDRESS]`).
-- The flight search and enquiry form are front-end only; connect them to a booking engine / form service before going live.
+- Booking and enquiry buttons link to the official portal at https://booking.beyondwingsholidays.com/. No payment or enquiry data is collected on this marketing site.
+- Verified portal routes: / (flights), /hotel-page, /package, /bus, /visa, /group-enquiry, /cab-enquiry, /train-enquiry and /find-booking.
+- No dedicated Sannidhi route was found: its call to action opens holiday packages and asks customers to confirm the plan with the team.
 
 ## Photo credits
 

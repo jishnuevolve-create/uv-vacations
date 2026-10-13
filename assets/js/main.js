@@ -174,10 +174,7 @@ class Component extends DCLogic {
       onHeroTo: function (e) { self.setState({ heroTo: e.target.value }); },
       heroGo: function (e) {
         if (e && e.preventDefault) e.preventDefault();
-        var dest = self.state.heroTo.trim();
-        self.setState({ tab: 'flights', to: dest || self.state.to, searched: false });
-        var el = document.getElementById('book');
-        if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        window.location.assign("https://booking.beyondwingsholidays.com/");
       },
 
       tabs: this.TABS.map(function (t) {
@@ -204,7 +201,7 @@ class Component extends DCLogic {
       paxDec: function () { self.setState({ pax: Math.max(1, self.state.pax - 1) }); },
       paxInc: function () { self.setState({ pax: Math.min(9, self.state.pax + 1) }); },
       searched: s.searched,
-      search: function (e) { if (e && e.preventDefault) e.preventDefault(); self.setState({ searched: true }); },
+      search: function (e) { if (e && e.preventDefault) e.preventDefault(); window.location.assign("https://booking.beyondwingsholidays.com/"); },
 
       plans: PLANS.map(function (p, i) {
         var on = i === s.plan;
@@ -244,7 +241,7 @@ class Component extends DCLogic {
 
       sent: s.sent,
       notSent: !s.sent,
-      submit: function (e) { if (e && e.preventDefault) e.preventDefault(); self.setState({ sent: true }); },
+      submit: function (e) { if (e && e.preventDefault) e.preventDefault(); window.location.assign("https://booking.beyondwingsholidays.com/group-enquiry"); },
       reset: function () { self.setState({ sent: false }); }
     };
   }
